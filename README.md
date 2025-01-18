@@ -23,6 +23,8 @@ Therefore the problem becomes finding an optimal (least steps) path from the ori
 git clone https://github.com/ttahelenius/ir-command-overlap-solver.git
 ```
 
+Note: Python 3.9+ required.
+
 ## **Usage**
 
 The three LED devices denoted as backled, frontled and potled[^1] can take various color modes such as r, g, b, r2, g2, b2 etc. denoting different shades of red, green and blue. They can also be on, off, paused etc. or in some other more dynamic modes. These should be used to denote the initial and desired states.
