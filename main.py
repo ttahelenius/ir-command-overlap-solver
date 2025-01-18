@@ -37,7 +37,7 @@ def read_input(arg1: str, arg2: str) -> tuple[list[str], list[str]]:
 def separate(str: str) -> list[str]:
     return [x.strip() for x in str.split(',')]
 
-def solve_command_series(given_initial_state: str, given_desired_state: str, use_cache: bool = False) -> list[configuration.Command]:
+def solve_command_series(given_initial_state: str, given_desired_state: str, use_cache: bool = False) -> list[configuration.Command] | None:
     import validation as verify
     import solver
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         print(str(e))
         sys.exit(1)
 
-    if commandseries == None:
+    if commandseries is None:
         if not machine_readable_output:
             print("Not a single solution found!")
         sys.exit(0)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         executable, side_effect = configuration.COMMANDS[command]
 
         if mark_delays_for_avoiding_overwhelm:
-            effects = [executable] + ([side_effect] if side_effect != None else [])
+            effects = [executable] + ([side_effect] if side_effect is not None else [])
             add_delay = False
             if any(s.startswith("backled ") for s in effects):
                 if backled_toggled and not just_awaited_repeats:

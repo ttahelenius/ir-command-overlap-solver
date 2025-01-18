@@ -22,7 +22,7 @@ import cache
 
 MAX_STEPS_TO_CHECK = 3
 
-def solve(initial_state: list[str], desired_state: list[str], use_cache: bool = False) -> list[Command]:
+def solve(initial_state: list[str], desired_state: list[str], use_cache: bool = False) -> list[Command] | None:
     if use_cache and len(desired_state) == 1:
         cached_solution = cache.get_cached(initial_state, desired_state[0])
         if cached_solution != None:
@@ -32,7 +32,7 @@ def solve(initial_state: list[str], desired_state: list[str], use_cache: bool = 
     decoded_desired_state = read_state(decoded_initial_state, desired_state)
 
     special_solution = handle_special_case(decoded_initial_state, decoded_desired_state)
-    if special_solution != None:
+    if special_solution is not None:
         return special_solution
     
     if len(desired_state) == 1 and not is_state_setting_effective(decoded_initial_state, desired_state[0]):
@@ -40,7 +40,7 @@ def solve(initial_state: list[str], desired_state: list[str], use_cache: bool = 
 
     return solve_internal(decoded_initial_state, decoded_desired_state)
 
-def solve_internal(decoded_initial_state: State, decoded_desired_state: State) -> list[Command]:
+def solve_internal(decoded_initial_state: State, decoded_desired_state: State) -> list[Command] | None:
     state = encode_state(decoded_initial_state)
     endstate = encode_state(decoded_desired_state)
 
@@ -50,7 +50,7 @@ def solve_internal(decoded_initial_state: State, decoded_desired_state: State) -
     heuristic_solution = solve_with_heuristic(decoded_initial_state, decoded_desired_state)
 
     limit = MAX_STEPS_TO_CHECK
-    if heuristic_solution != None:
+    if heuristic_solution is not None:
         # The heuristic works, still going after a more optimal solution.
         # Note: not checking beyond MAX_STEPS_TO_CHECK so taking a rather
         #       insignificant risk of missing a very slightly better solution
@@ -59,24 +59,24 @@ def solve_internal(decoded_initial_state: State, decoded_desired_state: State) -
     
     solution = bfs(decoded_initial_state, decoded_desired_state, limit)
     
-    if solution != None:
+    if solution is not None:
         assert is_solution(solution, decoded_initial_state, decoded_desired_state)
         return solution
 
-    if heuristic_solution != None:
+    if heuristic_solution is not None:
         return heuristic_solution
 
     return None
 
 # breadth-first search
-def bfs(initial_state: State, desired_state: State, limit: int) -> list[Command]:
+def bfs(initial_state: State, desired_state: State, limit: int) -> list[Command] | None:
     from collections import deque
     if limit == 0:
         return None
     state = encode_state(initial_state)
     endstate = encode_state(desired_state)
     visited = set()
-    q = deque()
+    q: deque[tuple[int, int]] = deque()
     q.append((state, 0))
     commands = COMMANDS.keys()
     while len(q) > 0:
@@ -94,12 +94,13 @@ def bfs(initial_state: State, desired_state: State, limit: int) -> list[Command]
             if len(decoded_commandseries) == limit - 1:
                 continue
             q.append((next_state, next_commandseries_encoded))
+    return None
 
 def to_commands(intlist: list[int]) -> list[Command]:
     return [Command(c) for c in intlist]
 
 # Attempts several heuristics to speed up the solve
-def solve_with_heuristic(state: State, endstate: State) -> list[Command]:
+def solve_with_heuristic(state: State, endstate: State) -> list[Command] | None:
 
     if state.backled_on == 1 and endstate.backled_on == 0:
         attempt = [Command.BACK_OFF]
@@ -313,7 +314,7 @@ def solve_with_heuristic(state: State, endstate: State) -> list[Command]:
 
     return None
 
-def handle_special_case(state: State, endstate: State) -> list[Command]:
+def handle_special_case(state: State, endstate: State) -> list[Command] | None:
     # This particular calibration requires an absurd amount of RED-commands and
     # as such it's not encoded in the graph and has to be handled semi-manually.
     if endstate.potled_calibration == 1:
@@ -337,14 +338,14 @@ def handle_special_case(state: State, endstate: State) -> list[Command]:
         next_state = perform_command(state, Command.FRONT_DIY5_POT_R)
         # Attempt to return back to previous state
         steps_to_return = solve_internal(next_state, state)
-        if steps_to_return != None:
+        if steps_to_return is not None:
             return calibration_phase + steps_to_return
         return calibration_phase # No can do.
     
     return None
 
-def is_solution(solution: list[Command], state: State, endstate: State) -> bool:
-    if solution == None:
+def is_solution(solution: list[Command] | None, state: State, endstate: State) -> bool:
+    if solution is None:
         return False
     state = dataclasses.replace(state)
     for step in solution:

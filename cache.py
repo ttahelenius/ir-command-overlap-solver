@@ -34,7 +34,7 @@ TARGET_STATES = BACKLED_MODES + FRONTLED_MODES + POTLED_MODES \
                  + [st1 for st1, _ in RELATIVE_STATES] + [st2 for _, st2 in RELATIVE_STATES] \
                  + ["backled off", "backled on", "frontled off", "frontled on", "potled off", "potled on"]
 
-def get_cached(initial_states: list[str], target_state: str) -> list[Command]:
+def get_cached(initial_states: list[str], target_state: str) -> list[Command] | None:
     if target_state in ["frontled paused", "frontled unpaused", "frontled calibrate", "potled calibrate"]: # Exception to what's cached
         return None
     
@@ -139,7 +139,7 @@ if __name__ == "__main__":
                     if target_state in [backled_mode, frontled_mode, potled_mode]:
                         i += 8
                         continue
-                    solutions = set({tuple([o]) for o in get_commands_for_relative_state(target_state)})
+                    solutions: set[tuple[Command, ...] | list[Command]] = set({tuple([o]) for o in get_commands_for_relative_state(target_state)})
 
                     for backled_status in ["backled off", "backled on"]:
                         for frontled_status in ["frontled off", "frontled on"]:
@@ -156,18 +156,18 @@ if __name__ == "__main__":
                                 solution = None
 
                                 for candidate in solutions:
-                                    if solver.is_solution(candidate, decoded_initial_state, decoded_desired_state):
+                                    if solver.is_solution(list(candidate), decoded_initial_state, decoded_desired_state):
                                         solution = candidate
                                         break
 
-                                if solution == None:
+                                if solution is None:
                                     st = time.time()
                                     solution = solver.solve_internal(decoded_initial_state, decoded_desired_state)
                                     if time.time() - st > CACHE_SLOWER_THAN_MS/1000:
                                         cached_amount += 1
-                                        lines.append((i-1, encode_solution(solution)))
+                                        lines.append((i-1, encode_solution(solution))) # type: ignore  # assert will handle the hyphotetical None case
                                 assert solution != [], "Empty solution for {}, {}, {}, {}, {}, {} -> {}".format(backled_mode, frontled_mode, potled_mode, backled_status, frontled_status, potled_status, target_state)
-                                assert solution != None, "No solution for {}, {}, {}, {}, {}, {} -> {}".format(backled_mode, frontled_mode, potled_mode, backled_status, frontled_status, potled_status, target_state)
+                                assert solution is not None, "No solution for {}, {}, {}, {}, {}, {} -> {}".format(backled_mode, frontled_mode, potled_mode, backled_status, frontled_status, potled_status, target_state)
                                 solutions.add(tuple(solution))
                 end = time.time()
                 print("All states handled for {}, {}, {} in {} s  (i = {}; to be cached so far: {})".format(backled_mode, frontled_mode, potled_mode, end - start, i, cached_amount))

@@ -514,7 +514,7 @@ def decode_state(encoded: int) -> State:
     encoded, state.frontled_calibration = divmod(encoded, FRONTLED_CALIBRATION_LENGTH)
     return state
 
-def is_state_setting_effective(state: State, setting: str) -> Command:
+def is_state_setting_effective(state: State, setting: str) -> bool:
     match setting:
         case "backled off":
             return state.backled_on == 1
