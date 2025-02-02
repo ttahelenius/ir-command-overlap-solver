@@ -25,7 +25,7 @@ MAX_STEPS_TO_CHECK = 3
 def solve(initial_state: list[str], desired_state: list[str], use_cache: bool = False) -> list[Command] | None:
     if use_cache and len(desired_state) == 1:
         cached_solution = cache.get_cached(initial_state, desired_state[0])
-        if cached_solution != None:
+        if cached_solution is not None:
             return cached_solution
 
     decoded_initial_state = read_state(State(), initial_state)

@@ -79,7 +79,7 @@ def get_cached_internal(decoded_initial_state: State, decoded_desired_state: Sta
 def get_cached_internal0(decoded_initial_state: State, target_state: str):
     i = encode_state_combination(decoded_initial_state, target_state)
     with open(CACHE_FILE, "rb") as f:
-        while (data := f.read(8)): # 8 byte chucks: state combination 4 bytes, its solution 4 bytes
+        while data := f.read(8): # 8 byte chucks: state combination 4 bytes, its solution 4 bytes
             index = int.from_bytes(data[:4], byteorder='big')
             if index == i:
                 return decode_solution(int.from_bytes(data[4:], byteorder='big'))

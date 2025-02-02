@@ -28,7 +28,7 @@ Additional optional arguments:
 
 import configuration
 
-class Invalid_parameters(Exception):
+class InvalidParameters(Exception):
     pass
 
 def read_input(arg1: str, arg2: str) -> tuple[list[str], list[str]]:
@@ -44,17 +44,17 @@ def solve_command_series(given_initial_state: str, given_desired_state: str, use
     initial_state, desired_state = read_input(given_initial_state, given_desired_state)
 
     if not verify.is_valid_state(initial_state):
-        raise Invalid_parameters("Invalid initial state")
+        raise InvalidParameters("Invalid initial state")
     if not verify.is_valid_state(desired_state):
-        raise Invalid_parameters("Invalid desired end state")
+        raise InvalidParameters("Invalid desired end state")
     if not verify.all_modes_defined(initial_state):
-        raise Invalid_parameters("Define all modes")
+        raise InvalidParameters("Define all modes")
     if not verify.no_duplicate_mode_definitions(initial_state) or not verify.no_duplicate_mode_definitions(desired_state):
-        raise Invalid_parameters("No duplicate modes allowed!")
+        raise InvalidParameters("No duplicate modes allowed!")
     if not verify.absolute_state(initial_state):
-        raise Invalid_parameters("Relative state not allowed as initial")
+        raise InvalidParameters("Relative state not allowed as initial")
     if not verify.no_opposites_in_relative_states(desired_state):
-        raise Invalid_parameters("Simultaneous opposite states not allowed")
+        raise InvalidParameters("Simultaneous opposite states not allowed")
 
     return solver.solve(initial_state, desired_state, use_cache)
 
@@ -69,6 +69,8 @@ if __name__ == "__main__":
     use_cache = False
     mark_delays_for_avoiding_overwhelm = False
     mark_opportunity_for_awaiting_repeat_inputs = False
+    initial_state = ""
+    desired_state = ""
     for i in range(1, len(sys.argv)):
         if sys.argv[i] == "--machine-readable":
             machine_readable_output = True
@@ -93,7 +95,7 @@ if __name__ == "__main__":
 
     try:
         commandseries = solve_command_series(initial_state, desired_state, use_cache)
-    except Invalid_parameters as e:
+    except InvalidParameters as e:
         print(str(e))
         sys.exit(1)
 
@@ -134,7 +136,7 @@ if __name__ == "__main__":
 
         just_awaited_repeats = False
 
-        if machine_readable_output or side_effect == None:
+        if machine_readable_output or side_effect is None:
             print(executable)
         else:
             print("{} (side-effect: {})".format(executable, side_effect))
